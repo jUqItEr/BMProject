@@ -1,4 +1,4 @@
-package kr.co.bm.base;
+package com.bm.base;
 
 import javax.swing.*;
 import java.awt.*;
