@@ -46,10 +46,15 @@ public class BMOwnerLoginForm extends JFrame {
                     String pwdSha1 = HashAlgorithm.makeHash(pwd, "sha1");
 
                     if (pwdMd5.equals(md5) && pwdSha1.equals(sha1)) {
+                        BMOwnerMainForm nextForm = new BMOwnerMainForm();
+
                         JOptionPane.showMessageDialog(
                                 this,
                                 "로그인 성공!"
                         );
+
+
+
                     } else {
                         JOptionPane.showMessageDialog(
                                 this,
