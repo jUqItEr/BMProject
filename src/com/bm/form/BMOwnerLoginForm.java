@@ -20,15 +20,60 @@ public class BMOwnerLoginForm extends JFrame {
     private RoundedJPasswordField txtLoginPassword;
     private JLabel lblId;
     private JLabel lblPassword;
-    private JButton btnLogin;
-    private JCheckBox checkBox1;
-    private JButton button1;
-    private JButton button2;
+    private JButton btnSignIn;
+    private JCheckBox chkBoxAutoLogin;
+    private JButton btnFindInfo;
+    private JButton btnSignUp;
 
     public BMOwnerLoginForm() {
-        btnLogin.addActionListener(e -> {
+        initializeComponents();
+    }
+
+    public static void main(String[] args) {
+        new BMOwnerLoginForm();
+    }
+
+    private void createUIComponents() {
+        pnlImageLogo = new JPanel() {
+            final Image background = new ImageIcon("src/com/bm/res/drawable/bg_background.jpg").getImage();
+
+            @Override
+            protected void paintComponent(Graphics g) {
+                Dimension dim = getSize();
+                double ratio = (double)background.getHeight(null) / background.getWidth(null);
+                int newWidth = (int)(dim.width * ratio);
+                int newHeight = (int)(dim.height * ratio);
+
+                super.paintComponent(g);
+                g.drawImage(background, 0, 0, dim.width, dim.height, this);
+            }
+        };
+
+        txtLoginId = new RoundedJTextField(5);
+        txtLoginPassword = new RoundedJPasswordField(5);
+    }
+
+    private void initializeComponents() {
+        btnSignIn.addActionListener(e -> {
+            String storeId = txtLoginId.getText();
+            String storePwd = String.valueOf(txtLoginPassword.getPassword());
+
+            if (storeId.isEmpty()) {
+                JOptionPane.showMessageDialog(
+                        this,
+                        "아이디를 입력해주세요."
+                );
+                return;
+            }
+            if (storePwd.isEmpty()) {
+                JOptionPane.showMessageDialog(
+                        this,
+                        "비밀번호를 입력해주세요."
+                );
+                return;
+            }
+
             try {
-                String storeId = txtLoginId.getText();
                 String query = "SELECT STORE_PASSWORD1, STORE_PASSWORD2 FROM BMSTORE WHERE STORE_ID=?";
                 Connection conn = DBConnection.getConnection();
                 PreparedStatement pstmt = conn.prepareStatement(query);
@@ -41,20 +86,12 @@ public class BMOwnerLoginForm extends JFrame {
                 if (rs.next()) {
                     String md5 = rs.getString(1);
                     String sha1 = rs.getString(2);
-                    String pwd = String.valueOf(txtLoginPassword.getPassword());
-                    String pwdMd5 = HashAlgorithm.makeHash(pwd, "md5");
-                    String pwdSha1 = HashAlgorithm.makeHash(pwd, "sha1");
+                    String pwdMd5 = HashAlgorithm.makeHash(storePwd, "md5");
+                    String pwdSha1 = HashAlgorithm.makeHash(storePwd, "sha1");
 
                     if (pwdMd5.equals(md5) && pwdSha1.equals(sha1)) {
-                        BMOwnerMainForm nextForm = new BMOwnerMainForm();
-
-                        JOptionPane.showMessageDialog(
-                                this,
-                                "로그인 성공!"
-                        );
-
-
-
+                        new BMOwnerMainForm();
+                        this.setVisible(false);
                     } else {
                         JOptionPane.showMessageDialog(
                                 this,
@@ -76,34 +113,7 @@ public class BMOwnerLoginForm extends JFrame {
                 ex.printStackTrace();
             }
         });
-    }
 
-    public static void main(String[] args) {
-        BMOwnerLoginForm form = new BMOwnerLoginForm();
-        form.initializeComponents();
-    }
-
-    public void createUIComponents() {
-        pnlImageLogo = new JPanel() {
-            final Image background = new ImageIcon("src/com/bm/res/drawable/bg_background.jpg").getImage();
-
-            @Override
-            protected void paintComponent(Graphics g) {
-                Dimension dim = getSize();
-                double ratio = (double)background.getHeight(null) / background.getWidth(null);
-                int newWidth = (int)(dim.width * ratio);
-                int newHeight = (int)(dim.height * ratio);
-
-                super.paintComponent(g);
-                g.drawImage(background, newWidth / 2, newHeight / 2, newWidth, newHeight, this);
-            }
-        };
-
-        txtLoginId = new RoundedJTextField(5);
-        txtLoginPassword = new RoundedJPasswordField(5);
-    }
-
-    public void initializeComponents() {
         pnlMain.setBackground(Color.WHITE);
 
         this.setContentPane(this.pnlMain);
@@ -111,11 +121,23 @@ public class BMOwnerLoginForm extends JFrame {
 
         this.pack();
 
-        this.setSize(600, 800);
         this.setLocationRelativeTo(null);
         this.setVisible(true);
         this.setResizable(false);
         this.setLayout(null);
         this.setTitle("배달의민족 사장님");
+
+        try {
+            for (UIManager.LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
+                if ("Nimbus".equals(info.getName())) {
+                    UIManager.setLookAndFeel(info.getClassName());
+                }
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        for (Window window : Window.getWindows()) {
+            SwingUtilities.updateComponentTreeUI(window);
+        }
     }
 }
