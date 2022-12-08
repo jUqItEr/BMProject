@@ -24,6 +24,7 @@ public class BMOwnerLoginForm extends JFrame {
     private JCheckBox chkBoxAutoLogin;
     private JButton btnFindInfo;
     private JButton btnSignUp;
+    public static String STOREID;
 
     public BMOwnerLoginForm() {
         initializeComponents();
@@ -78,7 +79,7 @@ public class BMOwnerLoginForm extends JFrame {
                 Connection conn = DBConnection.getConnection();
                 PreparedStatement pstmt = conn.prepareStatement(query);
                 ResultSet rs;
-
+                this.STOREID = storeId;
                 pstmt.setString(1, storeId);
 
                 rs = pstmt.executeQuery();

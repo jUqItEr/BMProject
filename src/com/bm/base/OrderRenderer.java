@@ -8,13 +8,16 @@ import java.awt.*;
  * @version 1.0.0
  * */
 public class OrderRenderer<E> extends JPanel implements ListCellRenderer<E> {
+
+    private JPanel jpCell = new JPanel();
+
     /*
     * @description The constructor.
     *
     * @author      jUqItEr (pyt773924@gmail.com)
     * */
-    protected OrderRenderer(DefaultListModel<E> model) {
-        super(new BorderLayout());
+    public OrderRenderer() {
+//        super(new BorderLayout());
     }
 
     /*
@@ -34,8 +37,8 @@ public class OrderRenderer<E> extends JPanel implements ListCellRenderer<E> {
     @Override
     public Component getListCellRendererComponent(
             JList<? extends E> list, E value, int index, boolean isSelected, boolean cellHasFocus) {
-
-        return null;
+        jpCell.add(new JLabel("Render"));
+        return jpCell;
     }
 
     private static void resetButtonStatus(AbstractButton button) {
