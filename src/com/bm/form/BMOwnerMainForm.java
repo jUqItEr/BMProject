@@ -35,10 +35,14 @@ public class BMOwnerMainForm extends JFrame {
     public Connection conn = DBConnection.getConnection();
     public JTable menu_table;
     public DefaultTableModel default_menu_table;
+
     public JTable waiting_table;
     public DefaultTableModel default_waiting_table;
+    public static Object[][] waiting_list;
+
     public JTable complete_table;
     public DefaultTableModel default_complete_table;
+
 
     public BMOwnerMainForm() { initializeComponents(); }
 
@@ -60,11 +64,9 @@ public class BMOwnerMainForm extends JFrame {
 
     /* menu_table == 메뉴 */
     public Object[][] get_menu_list() {
-        System.out.println("get_menu_list");
         Object[][] temp_content;
         try {
             CallableStatement cstmt = conn.prepareCall("{call P_GET_MENU_LIST(?, ?) }");
-            System.out.println(STOREID);
             cstmt.setString(1, STOREID);
             cstmt.registerOutParameter(2, OracleTypes.CURSOR);
             cstmt.executeQuery();
@@ -137,7 +139,7 @@ public class BMOwnerMainForm extends JFrame {
                     int row = menu_table.getSelectedRow();
                     int column = menu_table.getSelectedColumn();
                     String resul = menu_table.getValueAt(row, column).toString();
-                    System.out.println(resul);
+                    System.out.println(resul);  // required sout!!
                     menu_list[row][column] = resul;
                 }
             }
@@ -267,8 +269,7 @@ public class BMOwnerMainForm extends JFrame {
         waiting_panel.setLayout(null);
 
         String header[] = {"배달일련번호", "배달지", "배달상태", "메뉴"};
-        Object[][] waiting_list = get_waiting_list();
-        System.out.println(waiting_list.length);
+        waiting_list = get_waiting_list();
 
         default_waiting_table = new DefaultTableModel(waiting_list, header)
         {
@@ -301,23 +302,43 @@ public class BMOwnerMainForm extends JFrame {
                 int[] selectedRow = waiting_table.getSelectedRows();
                 if(selectedRow.length == 0) {
                     JOptionPane.showMessageDialog(null,
-                            "메뉴를 선택 후 이용해주세요.", "Message",
+                            "메뉴를 선택 후 취소해주세요.", "Message",
                             JOptionPane.ERROR_MESSAGE);
                     return;
                 }
 
-                JTextField tf = new JTextField(10);
-                String name =
-                        JOptionPane.showInputDialog("주소을 입력하세요.");
-                if(name != null) {
-                    tf.setText(name);
+                int result = JOptionPane.showConfirmDialog(null, "정말 취소하시겠어요?",
+                        "Confirm", JOptionPane.YES_NO_OPTION);
+                if(result == JOptionPane.CLOSED_OPTION) {
+                    // 사용자가 "예", "아니요"의 선택 없이 다이얼로그 창을 닫은 경우
+                    JOptionPane.showMessageDialog(null,
+                            "취소하였습니다!", "Message",
+                            JOptionPane.ERROR_MESSAGE);
+                    return;
+                } else if(result == JOptionPane.YES_NO_OPTION) {
+                    try {
+                        PreparedStatement pstmt =
+                                conn.prepareStatement("DELETE FROM DELIVERY WHERE DELIVERY_NUMBER=?");
+                        int row = waiting_table.getSelectedRow();
+                        int column = 0; // DELIVERY_NUMBER
+                        int d_number = Integer.parseInt(waiting_list[row][column].toString());
+                        pstmt.setInt(1, d_number);
+                        pstmt.executeUpdate();
+                        pstmt.close();
+
+                        waiting_list = get_waiting_list();
+                        default_waiting_table.removeRow(row);
+                        default_waiting_table.fireTableDataChanged();
+                    } catch (SQLException err) {
+                        System.out.println(err);
+                    }
+
                 } else {
                     JOptionPane.showMessageDialog(null,
-                            "주소를 입력해주세요!", "Message",
+                            "취소하였습니다!", "Message",
                             JOptionPane.ERROR_MESSAGE);
                     return;
                 }
-
             }
         });
         waiting_panel.add(button_cancel);
@@ -371,7 +392,6 @@ public class BMOwnerMainForm extends JFrame {
 
         String header[] = {"배달일련번호", "배달지", "배달상태", "메뉴"};
         Object[][] complete_list = get_complete_list();
-        System.out.println(complete_list.length);
 
         default_complete_table = new DefaultTableModel(complete_list, header)
         {
