@@ -1,9 +1,9 @@
-package com.bm.form;
+package com.bmstore.form;
 
-import com.bm.base.RoundedJTextField;
-import com.bm.base.RoundedJPasswordField;
-import com.bm.database.DBConnection;
-import com.bm.security.HashAlgorithm;
+import com.bmstore.base.RoundedJTextField;
+import com.bmstore.base.RoundedJPasswordField;
+import com.bmstore.database.DBConnection;
+import com.bmstore.security.HashAlgorithm;
 
 import javax.swing.*;
 import java.awt.*;
@@ -24,7 +24,6 @@ public class BMOwnerLoginForm extends JFrame {
     private JCheckBox chkBoxAutoLogin;
     private JButton btnFindInfo;
     private JButton btnSignUp;
-    public static String STOREID;
 
     public BMOwnerLoginForm() {
         initializeComponents();
@@ -36,14 +35,12 @@ public class BMOwnerLoginForm extends JFrame {
 
     private void createUIComponents() {
         pnlImageLogo = new JPanel() {
-            final Image background = new ImageIcon("src/com/bm/res/drawable/bg_background.jpg").getImage();
+            final Image background = new ImageIcon("src/com/bmstore/res/drawable/bg_background.jpg")
+                                         .getImage();
 
             @Override
             protected void paintComponent(Graphics g) {
                 Dimension dim = getSize();
-                double ratio = (double)background.getHeight(null) / background.getWidth(null);
-                int newWidth = (int)(dim.width * ratio);
-                int newHeight = (int)(dim.height * ratio);
 
                 super.paintComponent(g);
                 g.drawImage(background, 0, 0, dim.width, dim.height, this);
@@ -55,6 +52,34 @@ public class BMOwnerLoginForm extends JFrame {
     }
 
     private void initializeComponents() {
+        this.setContentPane(this.pnlMain);
+        this.setDefaultCloseOperation(EXIT_ON_CLOSE);
+
+        this.pack();
+
+        this.setLocationRelativeTo(null);
+        this.setVisible(true);
+        this.setResizable(false);
+        this.setLayout(null);
+        this.setTitle("배달의민족 사장님");
+
+        /*
+        * @description Get Nimbus Look And Feel.
+        * @author      Kiseok Kang (pyt773924@gmail.com)
+        * */
+        try {
+            for (UIManager.LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
+                if ("Nimbus".equals(info.getName())) {
+                    UIManager.setLookAndFeel(info.getClassName());
+                }
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        for (Window window : Window.getWindows()) {
+            SwingUtilities.updateComponentTreeUI(window);
+        }
+
         btnSignIn.addActionListener(e -> {
             String storeId = txtLoginId.getText();
             String storePwd = String.valueOf(txtLoginPassword.getPassword());
@@ -79,7 +104,6 @@ public class BMOwnerLoginForm extends JFrame {
                 Connection conn = DBConnection.getConnection();
                 PreparedStatement pstmt = conn.prepareStatement(query);
                 ResultSet rs;
-                this.STOREID = storeId;
                 pstmt.setString(1, storeId);
 
                 rs = pstmt.executeQuery();
@@ -91,7 +115,8 @@ public class BMOwnerLoginForm extends JFrame {
                     String pwdSha1 = HashAlgorithm.makeHash(storePwd, "sha1");
 
                     if (pwdMd5.equals(md5) && pwdSha1.equals(sha1)) {
-                        new BMOwnerMainForm();
+                        new BMOwnerMainForm(storeId);
+
                         this.setVisible(false);
                     } else {
                         JOptionPane.showMessageDialog(
@@ -116,29 +141,5 @@ public class BMOwnerLoginForm extends JFrame {
         });
 
         pnlMain.setBackground(Color.WHITE);
-
-        this.setContentPane(this.pnlMain);
-        this.setDefaultCloseOperation(EXIT_ON_CLOSE);
-
-        this.pack();
-
-        this.setLocationRelativeTo(null);
-        this.setVisible(true);
-        this.setResizable(false);
-        this.setLayout(null);
-        this.setTitle("배달의민족 사장님");
-
-        try {
-            for (UIManager.LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
-                if ("Nimbus".equals(info.getName())) {
-                    UIManager.setLookAndFeel(info.getClassName());
-                }
-            }
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
-        for (Window window : Window.getWindows()) {
-            SwingUtilities.updateComponentTreeUI(window);
-        }
     }
 }

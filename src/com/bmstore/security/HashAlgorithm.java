@@ -1,4 +1,4 @@
-package com.bm.security;
+package com.bmstore.security;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;

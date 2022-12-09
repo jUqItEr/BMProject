@@ -1,4 +1,4 @@
-package com.bm.base;
+package com.bmstore.base;
 
 import javax.swing.*;
 import java.awt.*;
