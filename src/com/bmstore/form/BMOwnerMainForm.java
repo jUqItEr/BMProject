@@ -1,9 +1,14 @@
 package com.bmstore.form;
 
+import com.bmstore.base.RoundedJPasswordField;
+import com.bmstore.base.RoundedJTextField;
 import com.bmstore.database.DBConnection;
 import oracle.jdbc.OracleTypes;
+import oracle.net.jdbc.TNSAddress.Address;
 
 import javax.swing.*;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.KeyAdapter;
@@ -18,32 +23,44 @@ import java.util.Map;
 public class BMOwnerMainForm extends JFrame {
     private final Connection conn = DBConnection.getConnection();
 
+    /* tab 1 = 주문접수 */
     private JTabbedPane tabMain;
     private JPanel pnlMain;
     private JTabbedPane tabSub;
-    private JTable menuTable;
 
-    private final JButton btnOrder = new JButton("주문하기");
-    private final JButton btnCancel = new JButton("취소");
+    private JTable menuTable;
 
     private JTable waitingTable;
     private DefaultTableModel defaultWaitingTable;
     private static Object[][] waitingList;
 
+    private final JButton btnOrder = new JButton("주문하기");
+    private final JButton btnCancel = new JButton("취소");
+
+
+    /* tab 2 = 매장관리 */
+    private JPanel mPanelStore;     // 가게의 정보를 수정하는 Panel
+    private JPanel mPanelMenu;      // 가게의 메뉴를 추가하는 Panel
+    private JTextField 가게이름;
+    private JTextField 가게주소;
+    private JTextField 가게번호;
+    private JTextField 배달료;
+    private JButton 수정하기Button;
+    private JTextField 메뉴이름;
+    private JTextField 메뉴가격;
+    private JTextField 메뉴사진;
+    private JSpinner 재고;
+    private JTable table1;
+
+
+    /* common */
     private String _storeId;
 
-    public BMOwnerMainForm() {
-        initializeComponents();
-    }
+    public BMOwnerMainForm() { initializeComponents(); }
 
-    public BMOwnerMainForm(String storeId) {
-        this._storeId = storeId;
-        initializeComponents();
-    }
+    public BMOwnerMainForm(String storeId) { this._storeId = storeId; initializeComponents(); }
 
-    private void createUIComponents() {
-
-    }
+    private void createUIComponents() { }
 
     private void initializeComponents() {
         this.setContentPane(this.pnlMain);
@@ -57,11 +74,45 @@ public class BMOwnerMainForm extends JFrame {
         this.setResizable(false);
         this.setTitle("배달의민족 주문접수");
 
+
         this.setTabMenu();
         this.setTabWaiting();
         this.setTabComplete();
 
+        this.setMPanelStore();
+        this.setMPanelMenu();
+
         pnlMain.setBackground(Color.WHITE);
+    }
+
+    public void setMPanelStore() {
+        System.out.println("setMPanelStore");
+        try {
+            Statement stmt = conn.createStatement();
+            System.out.println(getStoreId());
+            ResultSet rs = stmt.executeQuery("select * from BMSTORE where STORE_ID=" + getStoreId());
+            while (rs.next()) {
+                System.out.println(rs.getString(1));
+                System.out.println(rs.getString(2));
+            }
+            rs.close();
+            stmt.close();
+        } catch (SQLException ex) {
+            System.out.println(ex);
+            ex.printStackTrace();
+        }
+
+        this.가게이름.setText("배달의 민족");
+        String[] header = {"메뉴"};
+        String[][] list = {
+                {"1"}
+
+        };
+        DefaultTableModel defaultTableModel = new DefaultTableModel(list, header);
+        this.table1 = new JTable(list, header);
+    }
+    public void setMPanelMenu() {
+        System.out.println("setMPanelMenu");
     }
 
     /* menu_table == 메뉴 */
@@ -224,6 +275,18 @@ public class BMOwnerMainForm extends JFrame {
             } else {
                 System.out.println("추가실패");
             }
+
+            waitingList = getWaitingList();
+            System.out.println(waitingList.length);
+            //default_waiting_table.fireTableDataChanged();
+            //waiting_table.repaint();
+//            default_waiting_table.setRowCount(0);
+            defaultWaitingTable.insertRow(waitingTable.getRowCount(), new Object[] {
+                    waitingList[waitingList.length - 1][0],
+                    waitingList[waitingList.length - 1][1],
+                    waitingList[waitingList.length - 1][2],
+                    waitingList[waitingList.length - 1][3],
+            });
             pstmt.close();
         } catch (SQLException error) {
             error.printStackTrace();
